@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoboKinema - Diseñador de Robots Educativo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root{--primary:#00f0ff;--primary-dark:#00a8b3;--secondary:#ff6b35;--accent:#7b2cbf;--bg-dark:#0a0a1a;--bg-card:#12122a;--text-primary:#fff;--text-secondary:#a0a0c0;--success:#00ff88;--warning:#ffcc00;--danger:#ff4444}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Exo 2',sans-serif;background:var(--bg-dark);color:var(--text-primary);min-height:100vh}
+        .header{background:linear-gradient(135deg,var(--bg-card),#1a1a3a);border-bottom:2px solid var(--primary);padding:1rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+        .logo{display:flex;align-items:center;gap:1rem}
+        .logo-icon{width:45px;height:45px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+        .logo h1{font-family:'Orbitron',sans-serif;font-size:1.6rem;background:linear-gradient(90deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav-tabs{display:flex;gap:.4rem;background:var(--bg-card);padding:.4rem;border-radius:10px;flex-wrap:wrap}
+        .nav-tab{padding:.6rem 1rem;background:transparent;border:none;color:var(--text-secondary);font-family:'Exo 2',sans-serif;font-weight:500;cursor:pointer;border-radius:6px;transition:all .3s}
+        .nav-tab:hover{background:#1a1a3a;color:var(--text-primary)}
+        .nav-tab.active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:var(--bg-dark);font-weight:600}
+        .main-content{padding:1.5rem;max-width:1500px;margin:0 auto}
+        .tab-content{display:none;animation:fadeIn .4s}
+        .tab-content.active{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .card{background:var(--bg-card);border-radius:14px;padding:1.25rem;margin-bottom:1.25rem;border:1px solid rgba(0,240,255,.1)}
+        .card-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;color:var(--primary);margin-bottom:.8rem}
+        .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem}
+        .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+        @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+        .intro-hero{text-align:center;padding:2rem;background:linear-gradient(135deg,rgba(0,240,255,.1),rgba(123,44,191,.1));border-radius:16px;margin-bottom:1.5rem}
+        .intro-hero h2{font-family:'Orbitron',sans-serif;font-size:2rem;margin-bottom:.8rem;background:linear-gradient(90deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .intro-hero p{color:var(--text-secondary);max-width:650px;margin:0 auto;line-height:1.6}
+        .concept-card{background:linear-gradient(135deg,var(--bg-card),#1a1a3a);padding:1.5rem;border-radius:14px;text-align:center;border:2px solid transparent;transition:all .3s}
+        .concept-card:hover{transform:translateY(-4px);border-color:var(--primary)}
+        .concept-icon{font-size:2.5rem;margin-bottom:.75rem}
+        .concept-card h3{font-family:'Orbitron',sans-serif;color:var(--primary);margin-bottom:.4rem;font-size:1rem}
+        .concept-card p{color:var(--text-secondary);font-size:.9rem;line-height:1.5}
+        .data-table{width:100%;border-collapse:collapse;background:var(--bg-dark);border-radius:10px;overflow:hidden}
+        .data-table th{background:linear-gradient(135deg,var(--primary-dark),var(--accent));padding:.6rem;text-align:center;font-family:'Orbitron',sans-serif;font-size:.75rem}
+        .data-table td{padding:.4rem;text-align:center;border-bottom:1px solid rgba(255,255,255,.05)}
+        .data-table input[type="number"]{width:55px;padding:.35rem;background:var(--bg-card);border:1px solid rgba(0,240,255,.3);border-radius:5px;color:var(--text-primary);text-align:center;font-family:'Exo 2',sans-serif}
+        .data-table input:focus{outline:none;border-color:var(--primary)}
+        .data-table select{padding:.35rem;background:var(--bg-card);border:1px solid rgba(0,240,255,.3);border-radius:5px;color:var(--text-primary)}
+        .data-table input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary)}
+        .btn{padding:.6rem 1.1rem;border:none;border-radius:6px;font-family:'Exo 2',sans-serif;font-weight:600;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:.4rem}
+        .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:var(--bg-dark)}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,240,255,.4)}
+        .btn-secondary{background:var(--bg-card);color:var(--primary);border:2px solid var(--primary)}
+        .btn-secondary:hover{background:var(--primary);color:var(--bg-dark)}
+        .btn-success{background:linear-gradient(135deg,var(--success),#00cc6a);color:var(--bg-dark)}
+        .btn-danger{background:linear-gradient(135deg,var(--danger),#cc0000);color:#fff}
+        .btn-warning{background:linear-gradient(135deg,var(--warning),#cc9900);color:var(--bg-dark)}
+        .btn-sm{padding:.35rem .7rem;font-size:.8rem}
+        .viewer-container{display:grid;grid-template-columns:1fr 300px;gap:1.25rem;height:calc(100vh - 160px);min-height:500px}
+        .viewer-3d{background:var(--bg-card);border-radius:14px;overflow:hidden;position:relative;border:2px solid rgba(0,240,255,.2)}
+        #canvas-container{width:100%;height:100%}
+        .viewer-controls{position:absolute;top:.75rem;left:.75rem;display:flex;gap:.3rem;flex-wrap:wrap}
+        .viewer-info{position:absolute;bottom:.75rem;left:.75rem;right:.75rem;background:rgba(10,10,26,.9);padding:.6rem;border-radius:8px;display:flex;justify-content:space-around}
+        .info-item{text-align:center}
+        .info-label{font-size:.65rem;color:var(--text-secondary);text-transform:uppercase}
+        .info-value{font-family:'Orbitron',sans-serif;font-size:.9rem;color:var(--primary)}
+        .control-panel{display:flex;flex-direction:column;gap:.75rem;overflow-y:auto}
+        .control-group{background:var(--bg-card);border-radius:10px;padding:.75rem}
+        .control-group-title{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--secondary);margin-bottom:.6rem;padding-bottom:.4rem;border-bottom:1px solid rgba(255,255,255,.1)}
+        .slider-control{margin-bottom:.6rem}
+        .slider-header{display:flex;justify-content:space-between;margin-bottom:.25rem}
+        .slider-label{font-size:.8rem;color:var(--text-secondary)}
+        .slider-value{background:var(--bg-dark);padding:.15rem .4rem;border-radius:4px;font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--primary)}
+        input[type="range"]{width:100%;height:5px;background:var(--bg-dark);border-radius:3px;-webkit-appearance:none}
+        input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--primary);border-radius:50%;cursor:pointer}
+        .export-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+        .export-card{background:var(--bg-card);border-radius:14px;padding:1.25rem;text-align:center;border:2px solid transparent;transition:all .3s;cursor:pointer}
+        .export-card:hover{border-color:var(--primary);transform:translateY(-4px)}
+        .export-icon{font-size:2rem;margin-bottom:.5rem}
+        .export-card h3{color:var(--primary);margin-bottom:.3rem;font-size:.95rem}
+        .export-card p{color:var(--text-secondary);font-size:.8rem}
+        .code-preview{background:#1e1e3a;border-radius:10px;overflow:hidden;margin-top:.75rem}
+        .code-header{background:var(--bg-dark);padding:.5rem .75rem;display:flex;justify-content:space-between;align-items:center}
+        .code-title{font-family:'Orbitron',sans-serif;font-size:.8rem;color:var(--secondary)}
+        .code-content{padding:.75rem;font-family:'Courier New',monospace;font-size:.75rem;color:#a0ffa0;overflow:auto;max-height:300px;white-space:pre;line-height:1.3}
+        .tip-box{background:rgba(0,255,136,.1);border:1px solid var(--success);border-radius:10px;padding:.75rem;margin:.75rem 0;display:flex;gap:.6rem}
+        .tip-icon{font-size:1.1rem}
+        .tip-content h4{color:var(--success);margin-bottom:.2rem;font-size:.85rem}
+        .tip-content p{color:var(--text-secondary);font-size:.85rem}
+        .position-display{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;margin-top:.4rem}
+        .pos-item{background:var(--bg-dark);padding:.4rem;border-radius:5px;text-align:center}
+        .pos-label{font-size:.6rem;color:var(--text-secondary);text-transform:uppercase}
+        .pos-value{font-family:'Orbitron',sans-serif;font-size:.85rem;color:var(--primary)}
+        .trajectory-controls{display:flex;gap:.3rem;margin-top:.5rem;flex-wrap:wrap}
+        .progress-bar{height:5px;background:var(--bg-dark);border-radius:3px;overflow:hidden;margin-top:.4rem}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width .2s}
+        @media(max-width:900px){.viewer-container{grid-template-columns:1fr;height:auto}.viewer-3d{height:350px}}
+        ::-webkit-scrollbar{width:6px;height:6px}
+        ::-webkit-scrollbar-track{background:var(--bg-dark)}
+        ::-webkit-scrollbar-thumb{background:var(--primary-dark);border-radius:3px}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🤖</div>
+            <div><h1>RoboKinema</h1><small style="color:var(--text-secondary);font-size:.7rem">Diseñador de Robots Educativo</small></div>
+        </div>
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="intro">📚 Intro</button>
+            <button class="nav-tab" data-tab="params">⚙️ Parámetros</button>
+            <button class="nav-tab" data-tab="design">📐 Diseño</button>
+            <button class="nav-tab" data-tab="viewer">🎮 3D</button>
+            <button class="nav-tab" data-tab="export">💾 Exportar</button>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <!-- TAB 1: INTRO -->
+        <section id="intro" class="tab-content active">
+            <div class="intro-hero">
+                <h2>¡Bienvenido al Mundo de la Robótica!</h2>
+                <p>Aprende a diseñar y controlar brazos robóticos de manera sencilla. Construye tu propio robot con Arduino y servomotores.</p>
+            </div>
+            <div class="grid-3">
+                <div class="concept-card">
+                    <div class="concept-icon">🦾</div>
+                    <h3>¿Qué es un Robot?</h3>
+                    <p>Un brazo robótico es una máquina que puede moverse y realizar tareas, controlado por una computadora.</p>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">🔗</div>
+                    <h3>Articulaciones</h3>
+                    <p>Son los "codos" del robot. Cada articulación permite girar o mover una parte. Usamos servomotores.</p>
+                </div>
+                <div class="concept-card">
+                    <div class="concept-icon">📏</div>
+                    <h3>Segmentos</h3>
+                    <p>Las partes rígidas que conectan articulaciones, como los huesos. Pueden ser palos o piezas 3D.</p>
+                </div>
+            </div>
+            <div class="card" style="margin-top:1.5rem">
+                <h2 class="card-title">🎯 Cinemática: El Lenguaje del Movimiento</h2>
+                <div class="grid-2">
+                    <div>
+                        <h4 style="color:var(--secondary);margin-bottom:.5rem">Cinemática Directa (FK)</h4>
+                        <p style="color:var(--text-secondary);font-size:.9rem;line-height:1.5"><strong>Pregunta:</strong> "Si muevo cada motor X grados, ¿dónde quedará la punta?"<br><br>Es como mover tu brazo: si doblas el codo 45° y giras el hombro 30°, tu mano termina en una posición específica.</p>
+                    </div>
+                    <div>
+                        <h4 style="color:var(--secondary);margin-bottom:.5rem">Cinemática Inversa (IK)</h4>
+                        <p style="color:var(--text-secondary);font-size:.9rem;line-height:1.5"><strong>Pregunta:</strong> "Quiero que la punta llegue aquí, ¿cuánto gira cada motor?"<br><br>Le dices al robot "quiero tu mano aquí" y él calcula cuánto girar cada motor. ¡Magia matemática!</p>
+                    </div>
+                </div>
+                <div class="tip-box">
+                    <div class="tip-icon">💡</div>
+                    <div class="tip-content">
+                        <h4>¿Por qué es importante?</h4>
+                        <p>La cinemática permite que tu robot dibuje, mueva objetos o realice tareas precisas.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="card-title">🛠️ Materiales Necesarios</h2>
+                <div class="grid-3">
+                    <div style="text-align:center;padding:.75rem"><div style="font-size:2rem">🎛️</div><h4 style="color:var(--primary)">Arduino</h4><p style="color:var(--text-secondary);font-size:.85rem">UNO, Mega o ESP32</p></div>
+                    <div style="text-align:center;padding:.75rem"><div style="font-size:2rem">⚡</div><h4 style="color:var(--primary)">Servomotores</h4><p style="color:var(--text-secondary);font-size:.85rem">SG90 o MG996R</p></div>
+                    <div style="text-align:center;padding:.75rem"><div style="font-size:2rem">🪵</div><h4 style="color:var(--primary)">Estructura</h4><p style="color:var(--text-secondary);font-size:.85rem">Palos, MDF o piezas 3D</p></div>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:1.5rem">
+                <button class="btn btn-primary" onclick="switchTab('params')" style="font-size:1rem;padding:.8rem 1.5rem">¡Comenzar! →</button>
+            </div>
+        </section>
+
+        <!-- TAB 2: PARÁMETROS DH -->
+        <section id="params" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">📐 Parámetros DH Simplificados</h2>
+                <p style="color:var(--text-secondary);margin-bottom:1rem">Denavit-Hartenberg: 4 números por articulación describen toda la geometría.</p>
+                <div class="grid-2">
+                    <div>
+                        <div style="margin-bottom:.6rem"><strong style="color:var(--primary)">d (distancia)</strong><br><span style="color:var(--text-secondary);font-size:.85rem">Altura vertical de la articulación</span></div>
+                        <div style="margin-bottom:.6rem"><strong style="color:var(--primary)">θ (theta)</strong><br><span style="color:var(--text-secondary);font-size:.85rem">Ángulo de rotación - lo que controla el servo</span></div>
+                        <div style="margin-bottom:.6rem"><strong style="color:var(--primary)">a (longitud)</strong><br><span style="color:var(--text-secondary);font-size:.85rem">Longitud del segmento horizontal</span></div>
+                        <div><strong style="color:var(--primary)">α (alpha)</strong><br><span style="color:var(--text-secondary);font-size:.85rem">Orientación del siguiente motor (0° o 90°)</span></div>
+                    </div>
+                    <div style="background:var(--bg-dark);border-radius:10px;padding:1rem;text-align:center">
+                        <svg width="220" height="180" viewBox="0 0 220 180">
+                            <line x1="40" y1="160" x2="40" y2="60" stroke="#4444ff" stroke-width="2.5"/><polygon points="40,50 35,65 45,65" fill="#4444ff"/><text x="20" y="55" fill="#4444ff" font-size="11">Z</text>
+                            <line x1="50" y1="130" x2="50" y2="90" stroke="#ff6b35" stroke-width="2" stroke-dasharray="4,3"/><text x="58" y="112" fill="#ff6b35" font-size="12" font-weight="bold">d</text>
+                            <line x1="40" y1="90" x2="150" y2="90" stroke="#ff4444" stroke-width="2.5"/><polygon points="160,90 145,85 145,95" fill="#ff4444"/><text x="165" y="94" fill="#ff4444" font-size="11">X</text>
+                            <line x1="55" y1="105" x2="135" y2="105" stroke="#00ff88" stroke-width="2" stroke-dasharray="4,3"/><text x="90" y="120" fill="#00ff88" font-size="12" font-weight="bold">a</text>
+                            <line x1="150" y1="90" x2="150" y2="30" stroke="#00f0ff" stroke-width="2.5"/><polygon points="150,20 145,35 155,35" fill="#00f0ff"/>
+                            <path d="M 55 90 A 15 15 0 0 0 40 105" stroke="#ffcc00" stroke-width="2" fill="none"/><text x="35" y="125" fill="#ffcc00" font-size="12" font-weight="bold">θ</text>
+                            <path d="M 150 75 A 15 15 0 0 1 165 90" stroke="#ff00ff" stroke-width="2" fill="none"/><text x="170" y="82" fill="#ff00ff" font-size="12" font-weight="bold">α</text>
+                            <circle cx="40" cy="90" r="5" fill="#ff4444"/><circle cx="150" cy="90" r="5" fill="#ff4444"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="card-title">🤖 Ejemplo: Robot 3 Articulaciones</h2>
+                <table class="data-table">
+                    <thead><tr><th>Art.</th><th>d (mm)</th><th>θ</th><th>a (mm)</th><th>α</th><th>Movimiento</th></tr></thead>
+                    <tbody>
+                        <tr><td>1 (Base)</td><td>50</td><td>θ₁</td><td>0</td><td>90°</td><td>Gira izq/der</td></tr>
+                        <tr><td>2 (Hombro)</td><td>0</td><td>θ₂</td><td>100</td><td>0°</td><td>Sube/baja</td></tr>
+                        <tr><td>3 (Codo)</td><td>0</td><td>θ₃</td><td>80</td><td>0°</td><td>Sube/baja</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align:center;margin-top:1.5rem">
+                <button class="btn btn-secondary" onclick="switchTab('intro')" style="margin-right:.75rem">← Volver</button>
+                <button class="btn btn-primary" onclick="switchTab('design')">Crear Robot →</button>
+            </div>
+        </section>
+
+        <!-- TAB 3: DISEÑO -->
+        <section id="design" class="tab-content">
+            <div class="grid-2">
+                <div class="card">
+                    <h2 class="card-title">📊 Configuración del Robot</h2>
+                    <p style="color:var(--text-secondary);margin-bottom:.75rem;font-size:.9rem">Define los puntos. Marca "Art." donde hay un servo.</p>
+                    <div style="overflow-x:auto">
+                        <table class="data-table" id="robot-table">
+                            <thead><tr><th>P</th><th>X</th><th>Y</th><th>Z</th><th>Art.</th><th>Eje</th><th></th></tr></thead>
+                            <tbody id="points-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:.75rem;display:flex;gap:.4rem;flex-wrap:wrap">
+                        <button class="btn btn-success btn-sm" onclick="addPoint()">➕ Agregar</button>
+                        <button class="btn btn-secondary btn-sm" onclick="loadExample3DOF()">📋 Ejemplo</button>
+                        <button class="btn btn-warning btn-sm" onclick="resetRobot()">🔄 Reset</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="card-title">📐 Tabla DH</h2>
+                    <table class="data-table"><thead><tr><th>i</th><th>d</th><th>θ</th><th>a</th><th>α</th></tr></thead><tbody id="dh-tbody"></tbody></table>
+                    <div class="tip-box" style="margin-top:.75rem">
+                        <div class="tip-icon">ℹ️</div>
+                        <div class="tip-content"><h4>Resumen</h4><p id="robot-summary">Cargando...</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="card-title">👁️ Vista Previa</h2>
+                <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+                    <div id="preview-canvas" style="flex:0 0 320px;height:250px;background:var(--bg-dark);border-radius:10px;border:2px solid var(--primary)"></div>
+                    <div style="flex:1;min-width:180px">
+                        <div style="display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem">
+                            <div style="display:flex;align-items:center;gap:.4rem"><div style="width:12px;height:12px;background:#ff4444;border-radius:50%"></div><span style="color:var(--text-secondary);font-size:.85rem">Articulaciones</span></div>
+                            <div style="display:flex;align-items:center;gap:.4rem"><div style="width:12px;height:12px;background:#00ff88;border-radius:50%"></div><span style="color:var(--text-secondary);font-size:.85rem">Puntos</span></div>
+                            <div style="display:flex;align-items:center;gap:.4rem"><div style="width:12px;height:12px;background:#ff00ff;border-radius:50%"></div><span style="color:var(--text-secondary);font-size:.85rem">Efector final</span></div>
+                            <div style="display:flex;align-items:center;gap:.4rem"><div style="width:20px;height:4px;background:#00f0ff;border-radius:2px"></div><span style="color:var(--text-secondary);font-size:.85rem">Segmentos</span></div>
+                        </div>
+                        <button class="btn btn-primary" onclick="switchTab('viewer')">🎮 Ver en 3D →</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- TAB 4: VISUALIZACIÓN 3D -->
+        <section id="viewer" class="tab-content">
+            <div class="viewer-container">
+                <div class="viewer-3d">
+                    <div id="canvas-container"></div>
+                    <div class="viewer-controls">
+                        <button class="btn btn-sm btn-secondary" onclick="setView('perspective')">Perspectiva</button>
+                        <button class="btn btn-sm btn-secondary" onclick="setView('top')">Superior</button>
+                        <button class="btn btn-sm btn-secondary" onclick="setView('front')">Frontal</button>
+                        <button class="btn btn-sm btn-secondary" onclick="setView('side')">Lateral</button>
+                        <button class="btn btn-sm btn-danger" onclick="resetView()">🔄</button>
+                    </div>
+                    <div class="viewer-info">
+                        <div class="info-item"><div class="info-label">X</div><div class="info-value" id="pos-x">0.00</div></div>
+                        <div class="info-item"><div class="info-label">Y</div><div class="info-value" id="pos-y">0.00</div></div>
+                        <div class="info-item"><div class="info-label">Z</div><div class="info-value" id="pos-z">0.00</div></div>
+                        <div class="info-item"><div class="info-label">DOF</div><div class="info-value" id="joint-count">0</div></div>
+                    </div>
+                </div>
+                <div class="control-panel">
+                    <div class="control-group">
+                        <div class="control-group-title">🎮 Control FK</div>
+                        <div id="joint-sliders"></div>
+                        <button class="btn btn-secondary btn-sm" onclick="resetJoints()" style="width:100%;margin-top:.4rem">Resetear</button>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-group-title">🎯 Cinemática Inversa</div>
+                        <div class="position-display">
+                            <div class="pos-item"><div class="pos-label">X</div><input type="number" id="target-x" value="150" style="width:100%;background:transparent;border:none;color:var(--primary);font-family:'Orbitron';text-align:center;font-size:.85rem"></div>
+                            <div class="pos-item"><div class="pos-label">Y</div><input type="number" id="target-y" value="0" style="width:100%;background:transparent;border:none;color:var(--primary);font-family:'Orbitron';text-align:center;font-size:.85rem"></div>
+                            <div class="pos-item"><div class="pos-label">Z</div><input type="number" id="target-z" value="100" style="width:100%;background:transparent;border:none;color:var(--primary);font-family:'Orbitron';text-align:center;font-size:.85rem"></div>
+                        </div>
+                        <button class="btn btn-success btn-sm" onclick="solveIK()" style="width:100%;margin-top:.4rem">📍 Mover</button>
+                    </div>
+                    <div class="control-group">
+                        <div class="control-group-title">🔄 Trayectorias</div>
+                        <select id="traj-shape" style="width:100%;padding:.35rem;background:var(--bg-dark);border:1px solid var(--primary);border-radius:5px;color:var(--text-primary);margin-bottom:.4rem">
+                            <option value="square">Cuadrado</option><option value="circle">Círculo</option><option value="line">Línea</option>
+                        </select>
+                        <div style="display:flex;gap:.4rem;margin-bottom:.4rem">
+                            <input type="number" id="traj-size" value="20" min="5" max="50" placeholder="Tamaño" style="flex:1;padding:.35rem;background:var(--bg-dark);border:1px solid var(--primary);border-radius:5px;color:var(--text-primary)">
+                            <select id="traj-plane" style="flex:1;padding:.35rem;background:var(--bg-dark);border:1px solid var(--primary);border-radius:5px;color:var(--text-primary)">
+                                <option value="XY">XY</option><option value="XZ">XZ</option><option value="YZ">YZ</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="generateTrajectory()" style="width:100%">⚡ Generar</button>
+                        <div id="traj-controls" style="display:none;margin-top:.5rem">
+                            <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--text-secondary)"><span>Progreso:</span><span id="traj-progress-text">0/0</span></div>
+                            <div class="progress-bar"><div class="progress-fill" id="traj-progress-bar" style="width:0%"></div></div>
+                            <div class="trajectory-controls">
+                                <button class="btn btn-sm btn-secondary" onclick="trajPrev()">◀</button>
+                                <button class="btn btn-sm btn-success" onclick="trajPlay()" id="traj-play-btn">▶</button>
+                                <button class="btn btn-sm btn-secondary" onclick="trajNext()">▶</button>
+                                <button class="btn btn-sm btn-warning" onclick="trajReset()">⏮</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 5: EXPORTAR -->
+        <section id="export" class="tab-content">
+            <div class="card">
+                <h2 class="card-title">💾 Exportar tu Robot</h2>
+                <div class="export-options">
+                    <div class="export-card" onclick="exportArduino('uno')"><div class="export-icon">🔵</div><h3>Arduino UNO</h3><p>Hasta 6 servos</p></div>
+                    <div class="export-card" onclick="exportArduino('mega')"><div class="export-icon">🟢</div><h3>Arduino MEGA</h3><p>Más memoria</p></div>
+                    <div class="export-card" onclick="exportArduino('esp32')"><div class="export-icon">🟣</div><h3>ESP32</h3><p>Con WiFi</p></div>
+                    <div class="export-card" onclick="exportJSON()"><div class="export-icon">📄</div><h3>Guardar JSON</h3><p>Para cargar después</p></div>
+                </div>
+            </div>
+            <div class="card">
+                <h2 class="card-title">🔌 Conexiones</h2>
+                <div id="connection-instructions"><p style="color:var(--text-secondary)">Selecciona una placa Arduino arriba.</p></div>
+            </div>
+            <div class="card">
+                <h2 class="card-title">📝 Código</h2>
+                <div class="code-preview">
+                    <div class="code-header"><span class="code-title" id="code-title">robot.ino</span><button class="btn btn-sm btn-primary" onclick="copyCode()">📋</button></div>
+                    <pre class="code-content" id="code-content">// Selecciona una placa para generar código</pre>
+                </div>
+                <button class="btn btn-success" onclick="downloadCode()" style="margin-top:.75rem">⬇️ Descargar</button>
+            </div>
+            <div class="card">
+                <h2 class="card-title">📂 Cargar Diseño</h2>
+                <input type="file" id="load-file" accept=".json" style="display:none" onchange="loadDesign(event)">
+                <button class="btn btn-secondary" onclick="document.getElementById('load-file').click()">📁 Cargar JSON</button>
+                <span id="loaded-file-name" style="color:var(--text-secondary);margin-left:.75rem"></span>
+            </div>
+        </section>
+    </main>
+    <script>
+        // ============================================
+        // DATOS DEL ROBOT
+        // ============================================
+        let robotPoints = [
+            { id: 0, x: 0, y: 0, z: 0, hasJoint: false, axis: 'Z' },
+            { id: 1, x: 0, y: 0, z: 50, hasJoint: true, axis: 'Z' },
+            { id: 2, x: 0, y: 0, z: 60, hasJoint: false, axis: 'Y' },
+            { id: 3, x: 100, y: 0, z: 60, hasJoint: true, axis: 'Y' },
+            { id: 4, x: 180, y: 0, z: 60, hasJoint: true, axis: 'Y' },
+            { id: 5, x: 230, y: 0, z: 60, hasJoint: false, axis: 'Y' }
+        ];
+        let jointAngles = [];
+        let trajectoryPoints = [];
+        let currentTrajIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+
+        // Three.js
+        let scene, camera, renderer, robotGroup;
+        let previewScene, previewCamera, previewRenderer;
+        let cameraDistance = 280;
+        let cameraRotation = { x: -Math.PI / 6, y: Math.PI / 4 };
+        let isDragging = false;
+        let lastMousePos = { x: 0, y: 0 };
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            initJointAngles();
+            renderPointsTable();
+            calculateDH();
+            initPreview3D();
+            init3DViewer();
+            updateRobotSummary();
+        });
+
+        function initTabs() {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'viewer') setTimeout(() => resizeViewer(), 100);
+        }
+
+        function resizeViewer() {
+            if (!renderer) return;
+            const container = document.getElementById('canvas-container');
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+
+        function initJointAngles() {
+            jointAngles = robotPoints.filter(p => p.hasJoint).map(() => 0);
+        }
+
+        // ============================================
+        // TABLA DE PUNTOS
+        // ============================================
+        function renderPointsTable() {
+            const tbody = document.getElementById('points-tbody');
+            tbody.innerHTML = '';
+            robotPoints.forEach((point, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>P${point.id}</strong></td>
+                    <td><input type="number" value="${point.x}" onchange="updatePoint(${index},'x',this.value)" step="1"></td>
+                    <td><input type="number" value="${point.y}" onchange="updatePoint(${index},'y',this.value)" step="1"></td>
+                    <td><input type="number" value="${point.z}" onchange="updatePoint(${index},'z',this.value)" step="1"></td>
+                    <td><input type="checkbox" ${point.hasJoint?'checked':''} onchange="updatePoint(${index},'hasJoint',this.checked)"></td>
+                    <td><select onchange="updatePoint(${index},'axis',this.value)" ${!point.hasJoint?'disabled':''}>
+                        <option value="X" ${point.axis==='X'?'selected':''}>X</option>
+                        <option value="Y" ${point.axis==='Y'?'selected':''}>Y</option>
+                        <option value="Z" ${point.axis==='Z'?'selected':''}>Z</option>
+                    </select></td>
+                    <td>${index>0?`<button class="btn btn-danger btn-sm" onclick="removePoint(${index})" style="padding:.2rem .4rem">✕</button>`:''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            initJointAngles();
+            calculateDH();
+            updateRobotSummary();
+            updatePreview();
+            updateRobot3D();
+            renderJointSliders();
+        }
+
+        function updatePoint(index, field, value) {
+            if (field === 'hasJoint') robotPoints[index][field] = value;
+            else if (field === 'axis') robotPoints[index][field] = value;
+            else robotPoints[index][field] = parseFloat(value) || 0;
+            initJointAngles();
+            calculateDH();
+            updateRobotSummary();
+            updatePreview();
+            updateRobot3D();
+            renderJointSliders();
+        }
+
+        function addPoint() {
+            const last = robotPoints[robotPoints.length - 1];
+            robotPoints.push({ id: robotPoints.length, x: last.x + 30, y: last.y, z: last.z, hasJoint: false, axis: 'Y' });
+            renderPointsTable();
+        }
+
+        function removePoint(index) {
+            if (robotPoints.length > 2) {
+                robotPoints.splice(index, 1);
+                robotPoints.forEach((p, i) => p.id = i);
+                renderPointsTable();
+            }
+        }
+
+        function loadExample3DOF() {
+            robotPoints = [
+                { id: 0, x: 0, y: 0, z: 0, hasJoint: false, axis: 'Z' },
+                { id: 1, x: 0, y: 0, z: 50, hasJoint: true, axis: 'Z' },
+                { id: 2, x: 0, y: 0, z: 60, hasJoint: false, axis: 'Y' },
+                { id: 3, x: 100, y: 0, z: 60, hasJoint: true, axis: 'Y' },
+                { id: 4, x: 180, y: 0, z: 60, hasJoint: true, axis: 'Y' },
+                { id: 5, x: 230, y: 0, z: 60, hasJoint: false, axis: 'Y' }
+            ];
+            renderPointsTable();
+        }
+
+        function resetRobot() {
+            robotPoints = [
+                { id: 0, x: 0, y: 0, z: 0, hasJoint: false, axis: 'Z' },
+                { id: 1, x: 0, y: 0, z: 50, hasJoint: true, axis: 'Z' }
+            ];
+            renderPointsTable();
+        }
+
+        // ============================================
+        // CÁLCULO DH
+        // ============================================
+        function calculateDH() {
+            const tbody = document.getElementById('dh-tbody');
+            tbody.innerHTML = '';
+            const joints = robotPoints.filter(p => p.hasJoint);
+            joints.forEach((joint, i) => {
+                const prevJoint = i === 0 ? robotPoints[0] : joints[i - 1];
+                const jointIndex = robotPoints.findIndex(p => p.id === joint.id);
+                const nextPoint = robotPoints[jointIndex + 1] || joint;
+                const d = joint.z - prevJoint.z;
+                const a = Math.sqrt(Math.pow(nextPoint.x - joint.x, 2) + Math.pow(nextPoint.y - joint.y, 2));
+                let alpha = 0;
+                if (i < joints.length - 1 && joint.axis !== joints[i + 1].axis) alpha = 90;
+                const row = document.createElement('tr');
+                row.innerHTML = `<td><strong>${i+1}</strong></td><td>${d.toFixed(1)}</td><td>θ<sub>${i+1}</sub></td><td>${a.toFixed(1)}</td><td>${alpha}°</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateRobotSummary() {
+            const joints = robotPoints.filter(p => p.hasJoint);
+            let totalLength = 0;
+            for (let i = 0; i < robotPoints.length - 1; i++) {
+                const p1 = robotPoints[i], p2 = robotPoints[i + 1];
+                totalLength += Math.sqrt(Math.pow(p2.x-p1.x,2)+Math.pow(p2.y-p1.y,2)+Math.pow(p2.z-p1.z,2));
+            }
+            document.getElementById('robot-summary').innerHTML = `<strong>Articulaciones:</strong> ${joints.length} | <strong>Alcance:</strong> ${totalLength.toFixed(0)}mm | <strong>DOF:</strong> ${joints.length}`;
+        }
+        // ============================================
+        // VISTA PREVIA 3D (Tab Diseño)
+        // ============================================
+        function initPreview3D() {
+            const container = document.getElementById('preview-canvas');
+            if (!container) return;
+            previewScene = new THREE.Scene();
+            previewScene.background = new THREE.Color(0x0a0a1a);
+            previewCamera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 2000);
+            previewCamera.position.set(180, 120, 180);
+            previewCamera.lookAt(80, 40, 0);
+            previewRenderer = new THREE.WebGLRenderer({ antialias: true });
+            previewRenderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(previewRenderer.domElement);
+            const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+            previewScene.add(ambient);
+            const directional = new THREE.DirectionalLight(0xffffff, 0.8);
+            directional.position.set(100, 100, 100);
+            previewScene.add(directional);
+            const grid = new THREE.GridHelper(250, 25, 0x444444, 0x222222);
+            grid.rotation.x = Math.PI / 2;
+            previewScene.add(grid);
+            const axes = new THREE.AxesHelper(60);
+            previewScene.add(axes);
+            updatePreview();
+            animatePreview();
+        }
+
+        function updatePreview() {
+            if (!previewScene) return;
+            const old = previewScene.getObjectByName('previewRobot');
+            if (old) previewScene.remove(old);
+            const group = new THREE.Group();
+            group.name = 'previewRobot';
+            for (let i = 0; i < robotPoints.length; i++) {
+                const p = robotPoints[i];
+                const geo = new THREE.SphereGeometry(p.hasJoint ? 5 : 3.5, 14, 14);
+                let color = i === robotPoints.length - 1 ? 0xff00ff : (p.hasJoint ? 0xff4444 : 0x00ff88);
+                const mat = new THREE.MeshPhongMaterial({ color, emissive: color, emissiveIntensity: 0.25 });
+                const sphere = new THREE.Mesh(geo, mat);
+                sphere.position.set(p.x, p.z, -p.y);
+                group.add(sphere);
+                if (i < robotPoints.length - 1) {
+                    const next = robotPoints[i + 1];
+                    const start = new THREE.Vector3(p.x, p.z, -p.y);
+                    const end = new THREE.Vector3(next.x, next.z, -next.y);
+                    const dir = new THREE.Vector3().subVectors(end, start);
+                    const len = dir.length();
+                    if (len > 0.1) {
+                        const cylGeo = new THREE.CylinderGeometry(2.5, 2.5, len, 10);
+                        const cylMat = new THREE.MeshPhongMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 0.15 });
+                        const cyl = new THREE.Mesh(cylGeo, cylMat);
+                        const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+                        cyl.position.copy(mid);
+                        cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+                        group.add(cyl);
+                    }
+                }
+            }
+            previewScene.add(group);
+        }
+
+        function animatePreview() {
+            requestAnimationFrame(animatePreview);
+            if (previewRenderer && previewScene && previewCamera) previewRenderer.render(previewScene, previewCamera);
+        }
+
+        // ============================================
+        // VISOR 3D PRINCIPAL
+        // ============================================
+        function init3DViewer() {
+            const container = document.getElementById('canvas-container');
+            if (!container) return;
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 2000);
+            updateCameraPosition();
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+            const dir1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            dir1.position.set(100, 100, 100);
+            scene.add(dir1);
+            const dir2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            dir2.position.set(-100, -100, -100);
+            scene.add(dir2);
+            const grid = new THREE.GridHelper(350, 35, 0x444444, 0x222222);
+            grid.rotation.x = Math.PI / 2;
+            scene.add(grid);
+            scene.add(new THREE.AxesHelper(80));
+            robotGroup = new THREE.Group();
+            robotGroup.name = 'robot';
+            scene.add(robotGroup);
+            updateRobot3D();
+            renderJointSliders();
+            animate3D();
+            container.addEventListener('mousedown', onMouseDown);
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('mouseup', onMouseUp);
+            container.addEventListener('mouseleave', onMouseUp);
+            container.addEventListener('wheel', onWheel);
+            window.addEventListener('resize', resizeViewer);
+        }
+
+        function updateCameraPosition() {
+            if (!camera) return;
+            camera.position.set(
+                cameraDistance * Math.sin(cameraRotation.y) * Math.cos(cameraRotation.x),
+                cameraDistance * Math.sin(cameraRotation.x),
+                cameraDistance * Math.cos(cameraRotation.y) * Math.cos(cameraRotation.x)
+            );
+            camera.lookAt(80, 40, 0);
+        }
+
+        function updateRobot3D() {
+            if (!robotGroup) return;
+            while (robotGroup.children.length) robotGroup.remove(robotGroup.children[0]);
+            const positions = calculateFK();
+            for (let i = 0; i < positions.length; i++) {
+                const pos = positions[i];
+                const point = robotPoints[i];
+                const geo = new THREE.SphereGeometry(point.hasJoint ? 6 : 4, 18, 18);
+                let color = i === positions.length - 1 ? 0xff00ff : (point.hasJoint ? 0xff4444 : 0x00ff88);
+                const mat = new THREE.MeshPhongMaterial({ color, emissive: color, emissiveIntensity: 0.25, shininess: 80 });
+                const sphere = new THREE.Mesh(geo, mat);
+                sphere.position.copy(pos);
+                robotGroup.add(sphere);
+                if (i < positions.length - 1) {
+                    const nextPos = positions[i + 1];
+                    const dir = new THREE.Vector3().subVectors(nextPos, pos);
+                    const len = dir.length();
+                    if (len > 0.1) {
+                        const cylGeo = new THREE.CylinderGeometry(3, 3, len, 14);
+                        const cylMat = new THREE.MeshPhongMaterial({ color: 0x00f0ff, emissive: 0x00f0ff, emissiveIntensity: 0.15, shininess: 60 });
+                        const cyl = new THREE.Mesh(cylGeo, cylMat);
+                        const mid = new THREE.Vector3().addVectors(pos, nextPos).multiplyScalar(0.5);
+                        cyl.position.copy(mid);
+                        cyl.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+                        robotGroup.add(cyl);
+                    }
+                }
+            }
+            if (positions.length > 0) {
+                const end = positions[positions.length - 1];
+                document.getElementById('pos-x').textContent = end.x.toFixed(1);
+                document.getElementById('pos-y').textContent = (-end.z).toFixed(1);
+                document.getElementById('pos-z').textContent = end.y.toFixed(1);
+            }
+            document.getElementById('joint-count').textContent = robotPoints.filter(p => p.hasJoint).length;
+        }
+
+        function calculateFK() {
+            const positions = [];
+            let jointIdx = 0;
+            let currentTransform = new THREE.Matrix4();
+            for (let i = 0; i < robotPoints.length; i++) {
+                const point = robotPoints[i];
+                if (i === 0) { positions.push(new THREE.Vector3(point.x, point.z, -point.y)); continue; }
+                const prev = robotPoints[i - 1];
+                let local = new THREE.Vector3(point.x - prev.x, point.z - prev.z, -(point.y - prev.y));
+                if (prev.hasJoint && jointIdx < jointAngles.length) {
+                    const angle = jointAngles[jointIdx] * Math.PI / 180;
+                    const rot = new THREE.Matrix4();
+                    if (prev.axis === 'Z') rot.makeRotationY(angle);
+                    else if (prev.axis === 'Y') rot.makeRotationZ(angle);
+                    else rot.makeRotationX(angle);
+                    currentTransform.multiply(rot);
+                    jointIdx++;
+                }
+                local.applyMatrix4(currentTransform);
+                const prevPos = positions[i - 1];
+                positions.push(new THREE.Vector3(prevPos.x + local.x, prevPos.y + local.y, prevPos.z + local.z));
+            }
+            return positions;
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            if (renderer && scene && camera) renderer.render(scene, camera);
+        }
+
+        function onMouseDown(e) { isDragging = true; lastMousePos = { x: e.clientX, y: e.clientY }; }
+        function onMouseMove(e) {
+            if (!isDragging) return;
+            cameraRotation.y += (e.clientX - lastMousePos.x) * 0.01;
+            cameraRotation.x += (e.clientY - lastMousePos.y) * 0.01;
+            cameraRotation.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotation.x));
+            lastMousePos = { x: e.clientX, y: e.clientY };
+            updateCameraPosition();
+        }
+        function onMouseUp() { isDragging = false; }
+        function onWheel(e) {
+            e.preventDefault();
+            cameraDistance += e.deltaY > 0 ? 18 : -18;
+            cameraDistance = Math.max(80, Math.min(550, cameraDistance));
+            updateCameraPosition();
+        }
+
+        function setView(preset) {
+            switch(preset) {
+                case 'top': cameraRotation = { x: Math.PI / 2 - 0.01, y: 0 }; break;
+                case 'front': cameraRotation = { x: 0, y: 0 }; break;
+                case 'side': cameraRotation = { x: 0, y: Math.PI / 2 }; break;
+                case 'perspective': cameraRotation = { x: -Math.PI / 6, y: Math.PI / 4 }; break;
+            }
+            updateCameraPosition();
+        }
+
+        function resetView() {
+            cameraRotation = { x: -Math.PI / 6, y: Math.PI / 4 };
+            cameraDistance = 280;
+            updateCameraPosition();
+        }
+        // ============================================
+        // CONTROL DE ARTICULACIONES
+        // ============================================
+        function renderJointSliders() {
+            const container = document.getElementById('joint-sliders');
+            if (!container) return;
+            container.innerHTML = '';
+            const joints = robotPoints.filter(p => p.hasJoint);
+            joints.forEach((joint, i) => {
+                const div = document.createElement('div');
+                div.className = 'slider-control';
+                div.innerHTML = `
+                    <div class="slider-header">
+                        <span class="slider-label">J${i+1} (${joint.axis})</span>
+                        <span class="slider-value" id="joint-val-${i}">${jointAngles[i]||0}°</span>
+                    </div>
+                    <input type="range" min="-90" max="90" value="${jointAngles[i]||0}" oninput="updateJointAngle(${i},this.value)">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateJointAngle(index, value) {
+            jointAngles[index] = parseFloat(value);
+            document.getElementById(`joint-val-${index}`).textContent = value + '°';
+            updateRobot3D();
+        }
+
+        function resetJoints() {
+            jointAngles = jointAngles.map(() => 0);
+            renderJointSliders();
+            updateRobot3D();
+        }
+
+        // ============================================
+        // CINEMÁTICA INVERSA
+        // ============================================
+        function solveIK() {
+            const tx = parseFloat(document.getElementById('target-x').value);
+            const ty = parseFloat(document.getElementById('target-y').value);
+            const tz = parseFloat(document.getElementById('target-z').value);
+            const joints = robotPoints.filter(p => p.hasJoint);
+            if (joints.length < 2) { alert('Se necesitan al menos 2 articulaciones'); return; }
+            const baseHeight = joints[0].z;
+            // Theta 1 - rotación base
+            const theta1 = Math.atan2(ty, tx) * 180 / Math.PI;
+            jointAngles[0] = theta1;
+            if (joints.length >= 2) {
+                const r = Math.sqrt(tx * tx + ty * ty);
+                const zRel = tz - baseHeight;
+                // Calcular longitudes de segmentos
+                let L1 = 0, L2 = 0;
+                const j1Idx = robotPoints.findIndex(p => p.id === joints[0].id);
+                const j2Idx = joints.length > 1 ? robotPoints.findIndex(p => p.id === joints[1].id) : j1Idx;
+                const j3Idx = joints.length > 2 ? robotPoints.findIndex(p => p.id === joints[2].id) : robotPoints.length - 1;
+                L1 = Math.sqrt(Math.pow(robotPoints[j2Idx].x - robotPoints[j1Idx].x, 2) + Math.pow(robotPoints[j2Idx].z - robotPoints[j1Idx].z, 2));
+                L2 = Math.sqrt(Math.pow(robotPoints[j3Idx].x - robotPoints[j2Idx].x, 2) + Math.pow(robotPoints[j3Idx].z - robotPoints[j2Idx].z, 2));
+                if (L1 < 1) L1 = 100;
+                if (L2 < 1) L2 = 80;
+                const D = Math.sqrt(r * r + zRel * zRel);
+                if (D > L1 + L2) { alert('¡Posición fuera de alcance!'); return; }
+                // IK geométrica
+                let cosTheta3 = (D * D - L1 * L1 - L2 * L2) / (2 * L1 * L2);
+                cosTheta3 = Math.max(-1, Math.min(1, cosTheta3));
+                const theta3 = Math.acos(cosTheta3);
+                const beta = Math.atan2(zRel, r);
+                let cosAlpha = (L1 * L1 + D * D - L2 * L2) / (2 * L1 * D);
+                cosAlpha = Math.max(-1, Math.min(1, cosAlpha));
+                const alpha = Math.acos(cosAlpha);
+                if (joints.length >= 3) {
+                    jointAngles[1] = (beta + alpha) * 180 / Math.PI - 90;
+                    jointAngles[2] = 90 - theta3 * 180 / Math.PI;
+                } else {
+                    jointAngles[1] = beta * 180 / Math.PI;
+                }
+            }
+            jointAngles = jointAngles.map(a => Math.max(-90, Math.min(90, a)));
+            renderJointSliders();
+            updateRobot3D();
+        }
+
+        // ============================================
+        // TRAYECTORIAS
+        // ============================================
+        function generateTrajectory() {
+            const shape = document.getElementById('traj-shape').value;
+            const size = parseFloat(document.getElementById('traj-size').value);
+            const plane = document.getElementById('traj-plane').value;
+            const steps = 36;
+            const positions = calculateFK();
+            const cp = positions[positions.length - 1];
+            const cx = cp.x, cy = -cp.z, cz = cp.y;
+            trajectoryPoints = [];
+            if (shape === 'square') {
+                const corners = plane === 'XY' ? [
+                    {x:cx,y:cy,z:cz},{x:cx+size,y:cy,z:cz},{x:cx+size,y:cy+size,z:cz},{x:cx,y:cy+size,z:cz},{x:cx,y:cy,z:cz}
+                ] : plane === 'XZ' ? [
+                    {x:cx,y:cy,z:cz},{x:cx+size,y:cy,z:cz},{x:cx+size,y:cy,z:cz+size},{x:cx,y:cy,z:cz+size},{x:cx,y:cy,z:cz}
+                ] : [
+                    {x:cx,y:cy,z:cz},{x:cx,y:cy+size,z:cz},{x:cx,y:cy+size,z:cz+size},{x:cx,y:cy,z:cz+size},{x:cx,y:cy,z:cz}
+                ];
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j <= steps/4; j++) {
+                        const t = j / (steps/4);
+                        trajectoryPoints.push({
+                            x: corners[i].x + t * (corners[i+1].x - corners[i].x),
+                            y: corners[i].y + t * (corners[i+1].y - corners[i].y),
+                            z: corners[i].z + t * (corners[i+1].z - corners[i].z)
+                        });
+                    }
+                }
+            } else if (shape === 'circle') {
+                const r = size / 2;
+                for (let i = 0; i <= steps; i++) {
+                    const angle = (i / steps) * 2 * Math.PI;
+                    if (plane === 'XY') trajectoryPoints.push({x: cx + r*Math.cos(angle), y: cy + r*Math.sin(angle), z: cz});
+                    else if (plane === 'XZ') trajectoryPoints.push({x: cx + r*Math.cos(angle), y: cy, z: cz + r*Math.sin(angle)});
+                    else trajectoryPoints.push({x: cx, y: cy + r*Math.cos(angle), z: cz + r*Math.sin(angle)});
+                }
+            } else {
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps;
+                    if (plane === 'XY') trajectoryPoints.push({x: cx + t*size, y: cy, z: cz});
+                    else if (plane === 'XZ') trajectoryPoints.push({x: cx + t*size, y: cy, z: cz});
+                    else trajectoryPoints.push({x: cx, y: cy + t*size, z: cz});
+                }
+            }
+            currentTrajIndex = 0;
+            document.getElementById('traj-controls').style.display = 'block';
+            updateTrajectoryUI();
+            drawTrajectory3D();
+        }
+
+        function drawTrajectory3D() {
+            const old = scene.getObjectByName('trajectory');
+            if (old) scene.remove(old);
+            if (!trajectoryPoints.length) return;
+            const group = new THREE.Group();
+            group.name = 'trajectory';
+            const pts = trajectoryPoints.map(p => new THREE.Vector3(p.x, p.z, -p.y));
+            const geo = new THREE.BufferGeometry().setFromPoints(pts);
+            const mat = new THREE.LineBasicMaterial({ color: 0xffcc00, linewidth: 2 });
+            group.add(new THREE.Line(geo, mat));
+            scene.add(group);
+        }
+
+        function updateTrajectoryUI() {
+            document.getElementById('traj-progress-text').textContent = `${currentTrajIndex+1}/${trajectoryPoints.length}`;
+            document.getElementById('traj-progress-bar').style.width = ((currentTrajIndex+1)/trajectoryPoints.length*100)+'%';
+        }
+
+        function moveToTrajectoryPoint(index) {
+            if (index < 0 || index >= trajectoryPoints.length) return;
+            const p = trajectoryPoints[index];
+            document.getElementById('target-x').value = p.x.toFixed(1);
+            document.getElementById('target-y').value = p.y.toFixed(1);
+            document.getElementById('target-z').value = p.z.toFixed(1);
+            solveIK();
+            currentTrajIndex = index;
+            updateTrajectoryUI();
+        }
+
+        function trajPrev() { if (currentTrajIndex > 0) moveToTrajectoryPoint(currentTrajIndex - 1); }
+        function trajNext() { if (currentTrajIndex < trajectoryPoints.length - 1) moveToTrajectoryPoint(currentTrajIndex + 1); }
+        function trajReset() { stopPlaying(); moveToTrajectoryPoint(0); }
+        function trajPlay() {
+            if (isPlaying) { stopPlaying(); return; }
+            isPlaying = true;
+            document.getElementById('traj-play-btn').textContent = '⏸';
+            playInterval = setInterval(() => {
+                if (currentTrajIndex < trajectoryPoints.length - 1) moveToTrajectoryPoint(currentTrajIndex + 1);
+                else stopPlaying();
+            }, 80);
+        }
+        function stopPlaying() {
+            isPlaying = false;
+            document.getElementById('traj-play-btn').textContent = '▶';
+            if (playInterval) { clearInterval(playInterval); playInterval = null; }
+        }
+        // ============================================
+        // EXPORTACIÓN
+        // ============================================
+        function exportArduino(board) {
+            const joints = robotPoints.filter(p => p.hasJoint);
+            const n = joints.length;
+            let pinStart = board === 'esp32' ? 13 : 3;
+            let connections = '';
+            joints.forEach((j, i) => { connections += `   • Servo ${i+1} (Eje ${j.axis}): Pin ${pinStart+i}\n`; });
+            const boardName = board === 'uno' ? 'Arduino UNO' : board === 'mega' ? 'Arduino MEGA' : 'ESP32';
+            document.getElementById('connection-instructions').innerHTML = `
+                <h4 style="color:var(--secondary);margin-bottom:.75rem">Conexiones para ${boardName}</h4>
+                <div style="background:var(--bg-dark);padding:.75rem;border-radius:8px;margin-bottom:.75rem">
+                    <p style="color:var(--text-secondary);margin-bottom:.4rem;font-size:.85rem"><strong>Servomotores:</strong></p>
+                    <pre style="color:var(--primary);font-family:monospace;font-size:.8rem">${connections}</pre>
+                </div>
+                <div style="background:var(--bg-dark);padding:.75rem;border-radius:8px">
+                    <p style="color:var(--warning);font-size:.85rem">⚠️ Usa fuente externa 5V para los servos. Conecta GND común.</p>
+                </div>
+            `;
+            const segLengths = [];
+            for (let i = 0; i < joints.length; i++) {
+                const jIdx = robotPoints.findIndex(p => p.id === joints[i].id);
+                const nIdx = i < joints.length - 1 ? robotPoints.findIndex(p => p.id === joints[i+1].id) : robotPoints.length - 1;
+                const j1 = robotPoints[jIdx], j2 = robotPoints[nIdx];
+                segLengths.push(Math.sqrt(Math.pow(j2.x-j1.x,2)+Math.pow(j2.y-j1.y,2)+Math.pow(j2.z-j1.z,2)).toFixed(1));
+            }
+            const servoLib = board === 'esp32' ? '#include <ESP32Servo.h>' : '#include <Servo.h>';
+            const code = `/*
+ * RoboKinema - Código para ${boardName}
+ * Robot de ${n} Articulaciones
+ * Generado: ${new Date().toLocaleString()}
+ */
+
+${servoLib}
+
+#define NUM_JOINTS ${n}
+const int servoPins[NUM_JOINTS] = {${joints.map((_,i)=>pinStart+i).join(', ')}};
+const float segmentLengths[NUM_JOINTS] = {${segLengths.join(', ')}};
+const int minAngles[NUM_JOINTS] = {${joints.map(()=>'-90').join(', ')}};
+const int maxAngles[NUM_JOINTS] = {${joints.map(()=>'90').join(', ')}};
+const char jointAxes[NUM_JOINTS] = {${joints.map(j=>`'${j.axis}'`).join(', ')}};
+const float baseHeight = ${joints[0].z}.0;
+
+Servo servos[NUM_JOINTS];
+float currentAngles[NUM_JOINTS] = {0};
+float targetX = 0, targetY = 0, targetZ = 150;
+
+void setup() {
+    Serial.begin(115200);
+    for (int i = 0; i < NUM_JOINTS; i++) {
+        servos[i].attach(servoPins[i]);
+        servos[i].write(90);
+        currentAngles[i] = 0;
+    }
+    delay(1000);
+    Serial.println("=== RoboKinema ${n}-DOF ===");
+    printHelp();
+}
+
+void loop() {
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\\n');
+        cmd.trim();
+        processCommand(cmd);
+    }
+}
+
+void processCommand(String cmd) {
+    cmd.toUpperCase();
+    if (cmd.startsWith("J")) {
+        int joint = cmd.substring(1, 2).toInt();
+        float angle = cmd.substring(3).toFloat();
+        moveJoint(joint - 1, angle);
+    } else if (cmd.startsWith("G")) {
+        int i1 = cmd.indexOf(' '), i2 = cmd.indexOf(' ', i1+1), i3 = cmd.indexOf(' ', i2+1);
+        targetX = cmd.substring(i1+1, i2).toFloat();
+        targetY = cmd.substring(i2+1, i3).toFloat();
+        targetZ = cmd.substring(i3+1).toFloat();
+        solveIK(targetX, targetY, targetZ);
+    } else if (cmd.startsWith("CIRCLE")) {
+        int i1 = cmd.indexOf(' '), i2 = cmd.indexOf(' ', i1+1);
+        float r = cmd.substring(i1+1, i2).toFloat();
+        String plane = cmd.substring(i2+1);
+        drawCircle(r, plane);
+    } else if (cmd.startsWith("SQUARE")) {
+        int i1 = cmd.indexOf(' '), i2 = cmd.indexOf(' ', i1+1);
+        float s = cmd.substring(i1+1, i2).toFloat();
+        String plane = cmd.substring(i2+1);
+        drawSquare(s, plane);
+    } else if (cmd == "HOME") {
+        goHome();
+    } else if (cmd == "POS") {
+        printPosition();
+    } else if (cmd == "HELP" || cmd == "?") {
+        printHelp();
+    } else {
+        Serial.println("Comando no reconocido. Escribe HELP");
+    }
+}
+
+void moveJoint(int joint, float angle) {
+    if (joint < 0 || joint >= NUM_JOINTS) return;
+    angle = constrain(angle, minAngles[joint], maxAngles[joint]);
+    currentAngles[joint] = angle;
+    int servoAngle = map(angle, -90, 90, 0, 180);
+    servos[joint].write(servoAngle);
+    Serial.print("J"); Serial.print(joint+1); Serial.print(" -> "); Serial.print(angle); Serial.println("°");
+}
+
+void moveAllJoints(float angles[]) {
+    for (int i = 0; i < NUM_JOINTS; i++) { moveJoint(i, angles[i]); delay(20); }
+}
+
+void goHome() {
+    Serial.println("Moviendo a HOME...");
+    for (int i = 0; i < NUM_JOINTS; i++) { moveJoint(i, 0); delay(100); }
+}
+
+void solveIK(float x, float y, float z) {
+    Serial.print("IK -> ("); Serial.print(x); Serial.print(","); Serial.print(y); Serial.print(","); Serial.print(z); Serial.println(")");
+    float angles[NUM_JOINTS] = {0};
+    angles[0] = atan2(y, x) * 180.0 / PI;
+    if (NUM_JOINTS >= 2) {
+        float r = sqrt(x*x + y*y);
+        float zRel = z - baseHeight;
+        float D = sqrt(r*r + zRel*zRel);
+        float L1 = segmentLengths[1], L2 = (NUM_JOINTS >= 3) ? segmentLengths[2] : 0;
+        if (NUM_JOINTS >= 3 && L2 > 0) {
+            float cosT3 = constrain((D*D - L1*L1 - L2*L2) / (2*L1*L2), -1, 1);
+            float t3 = acos(cosT3);
+            float beta = atan2(zRel, r);
+            float cosA = constrain((L1*L1 + D*D - L2*L2) / (2*L1*D), -1, 1);
+            float alpha = acos(cosA);
+            angles[1] = (beta + alpha) * 180.0 / PI - 90;
+            angles[2] = 90 - t3 * 180.0 / PI;
+        } else {
+            angles[1] = atan2(zRel, r) * 180.0 / PI;
+        }
+    }
+    moveAllJoints(angles);
+}
+
+void drawCircle(float radius, String plane) {
+    Serial.print("Círculo "); Serial.print(radius); Serial.print("mm "); Serial.println(plane);
+    float cx = targetX, cy = targetY, cz = targetZ;
+    for (int i = 0; i <= 36; i++) {
+        float a = i * 2 * PI / 36;
+        float nx, ny, nz;
+        if (plane == "XY") { nx = cx + radius*cos(a); ny = cy + radius*sin(a); nz = cz; }
+        else if (plane == "XZ") { nx = cx + radius*cos(a); ny = cy; nz = cz + radius*sin(a); }
+        else { nx = cx; ny = cy + radius*cos(a); nz = cz + radius*sin(a); }
+        solveIK(nx, ny, nz); delay(50);
+    }
+    Serial.println("¡Listo!");
+}
+
+void drawSquare(float size, String plane) {
+    Serial.print("Cuadrado "); Serial.print(size); Serial.print("mm "); Serial.println(plane);
+    float cx = targetX, cy = targetY, cz = targetZ;
+    float corners[5][3];
+    if (plane == "XY") {
+        corners[0][0]=cx; corners[0][1]=cy; corners[0][2]=cz;
+        corners[1][0]=cx+size; corners[1][1]=cy; corners[1][2]=cz;
+        corners[2][0]=cx+size; corners[2][1]=cy+size; corners[2][2]=cz;
+        corners[3][0]=cx; corners[3][1]=cy+size; corners[3][2]=cz;
+        corners[4][0]=cx; corners[4][1]=cy; corners[4][2]=cz;
+    } else if (plane == "XZ") {
+        corners[0][0]=cx; corners[0][1]=cy; corners[0][2]=cz;
+        corners[1][0]=cx+size; corners[1][1]=cy; corners[1][2]=cz;
+        corners[2][0]=cx+size; corners[2][1]=cy; corners[2][2]=cz+size;
+        corners[3][0]=cx; corners[3][1]=cy; corners[3][2]=cz+size;
+        corners[4][0]=cx; corners[4][1]=cy; corners[4][2]=cz;
+    } else {
+        corners[0][0]=cx; corners[0][1]=cy; corners[0][2]=cz;
+        corners[1][0]=cx; corners[1][1]=cy+size; corners[1][2]=cz;
+        corners[2][0]=cx; corners[2][1]=cy+size; corners[2][2]=cz+size;
+        corners[3][0]=cx; corners[3][1]=cy; corners[3][2]=cz+size;
+        corners[4][0]=cx; corners[4][1]=cy; corners[4][2]=cz;
+    }
+    for (int s = 0; s < 4; s++) {
+        for (int t = 0; t <= 10; t++) {
+            float f = (float)t / 10;
+            float nx = corners[s][0] + f * (corners[s+1][0] - corners[s][0]);
+            float ny = corners[s][1] + f * (corners[s+1][1] - corners[s][1]);
+            float nz = corners[s][2] + f * (corners[s+1][2] - corners[s][2]);
+            solveIK(nx, ny, nz); delay(50);
+        }
+    }
+    Serial.println("¡Listo!");
+}
+
+void printPosition() {
+    Serial.println("--- Estado ---");
+    for (int i = 0; i < NUM_JOINTS; i++) {
+        Serial.print("J"); Serial.print(i+1); Serial.print("("); Serial.print(jointAxes[i]); Serial.print("): ");
+        Serial.print(currentAngles[i]); Serial.println("°");
+    }
+}
+
+void printHelp() {
+    Serial.println("");
+    Serial.println("--- COMANDOS ---");
+    Serial.println("J1 45      - Mover articulación 1 a 45°");
+    Serial.println("G 100 50 150 - Ir a posición XYZ");
+    Serial.println("CIRCLE 10 XY - Círculo 10mm en plano XY");
+    Serial.println("SQUARE 10 XY - Cuadrado 10mm en plano XY");
+    Serial.println("HOME       - Posición inicial");
+    Serial.println("POS        - Mostrar estado");
+    Serial.println("HELP       - Esta ayuda");
+    Serial.println("Planos: XY, XZ, YZ");
+    Serial.println("----------------");
+}
+`;
+            document.getElementById('code-content').textContent = code;
+            document.getElementById('code-title').textContent = `robot_${n}dof_${board}.ino`;
+        }
+
+        function exportJSON() {
+            const data = { name: 'Mi Robot', createdAt: new Date().toISOString(), points: robotPoints, jointAngles };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'robot_design.json'; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadDesign(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.points) {
+                        robotPoints = data.points;
+                        if (data.jointAngles) jointAngles = data.jointAngles;
+                        renderPointsTable();
+                        document.getElementById('loaded-file-name').textContent = `✓ ${file.name}`;
+                    }
+                } catch (err) { alert('Error: ' + err.message); }
+            };
+            reader.readAsText(file);
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(document.getElementById('code-content').textContent)
+                .then(() => alert('¡Código copiado!'));
+        }
+
+        function downloadCode() {
+            const code = document.getElementById('code-content').textContent;
+            const filename = document.getElementById('code-title').textContent;
+            const blob = new Blob([code], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
